@@ -31,9 +31,9 @@
             _followList.Add(userToFollow);
             Console.WriteLine(this.Username + " follow " + userToFollow.Username);
         }
-        public void RemoveFollower(Account accountnum)
+        public void RemoveFollower(Account User)
         {
-            _followList.Remove(accountnum);
+            _followList.Remove(User);
         }
 
         public void RegisterUser(string userName)
@@ -51,6 +51,14 @@
             _userDictionary.Add(userName, newUser);
             Console.WriteLine("Register user " + newUser.Username);
         }
+        public Account GetUser(string userName) {
+        if(!_userDictionary.ContainsKey(userName)) {
+            Console.WriteLine("Username " + userName + " does not exist");
+            return null;
+        }
+
+        return _userDictionary[userName];
+    }
 
     }
     class Programs
@@ -59,7 +67,10 @@
         {
             Account test = new Account();
             test.RegisterUser("Neko");
-            test.RegisterUser("Neko");
+            test.RegisterUser("Nekak");
+            
+        test.GetUser("Neko").FollowUser(test.GetUser("Nekak"));
+        test.GetUser("Neko").FollowUser(test.GetUser("Nekak"));
         }
     }
 }
