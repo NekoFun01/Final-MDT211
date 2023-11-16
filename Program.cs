@@ -51,26 +51,79 @@
             _userDictionary.Add(userName, newUser);
             Console.WriteLine("Register user " + newUser.Username);
         }
-        public Account GetUser(string userName) {
-        if(!_userDictionary.ContainsKey(userName)) {
-            Console.WriteLine("Username " + userName + " does not exist");
-            return null;
+        public Account GetUser(string userName)
+        {
+            if (!_userDictionary.ContainsKey(userName))
+            {
+                Console.WriteLine("Username " + userName + " does not exist");
+                return null;
+            }
+
+            return _userDictionary[userName];
         }
 
-        return _userDictionary[userName];
-    }
 
     }
+    public abstract class Post
+    {
+        //  List<Post> postList = new List<Post>();
+        public string Content { get; set; }
+        public string Username { get; set; }
+
+
+        public abstract void Display();
+    }
+
+    public class TextPost : Post
+    {
+        public override void Display()
+        {
+            Console.WriteLine("Text Post by " + Username + ": " + Content);
+        }
+    }
+
+    public class ImagePost : Post
+    {
+        public string ImageUrl { get; set; }
+
+        public override void Display()
+        {
+            Console.WriteLine("Image Post by " + Username + ": " + Content);
+            Console.WriteLine("Image URL: " + ImageUrl);
+        }
+    }
+
     class Programs
     {
-        static void Main(string[]args)
+        static void Main(string[] args)
         {
+            List<Post> postList = new List<Post>();
             Account test = new Account();
             test.RegisterUser("Neko");
             test.RegisterUser("Nekak");
-            
-        test.GetUser("Neko").FollowUser(test.GetUser("Nekak"));
-        test.GetUser("Neko").FollowUser(test.GetUser("Nekak"));
+
+            test.GetUser("Neko").FollowUser(test.GetUser("Nekak"));
+            test.GetUser("Neko").FollowUser(test.GetUser("Nekak"));
+            TextPost textPost1 = new TextPost
+            {
+                Username = "Alice",
+                Content = "Hello, World!"
+            };
+
+            ImagePost imagePost1 = new ImagePost
+            {
+                Username = "Charlie",
+                Content = "Beautiful sunset",
+                ImageUrl = "sunset.jpg"
+            };
+            postList.Add(textPost1);
+            postList.Add(imagePost1);
+            foreach (Post post in postList)
+            {
+                post.Display();
+                Console.WriteLine("------");
+            }
+
         }
     }
 }
