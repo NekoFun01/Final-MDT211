@@ -1,0 +1,14 @@
+F:\Final Code\bin\Debug\net7.0\Final Code.exe
+F:\Final Code\bin\Debug\net7.0\Final Code.deps.json
+F:\Final Code\bin\Debug\net7.0\Final Code.runtimeconfig.json
+F:\Final Code\bin\Debug\net7.0\Final Code.dll
+F:\Final Code\bin\Debug\net7.0\Final Code.pdb
+F:\Final Code\obj\Debug\net7.0\Final Code.GeneratedMSBuildEditorConfig.editorconfig
+F:\Final Code\obj\Debug\net7.0\Final Code.AssemblyInfoInputs.cache
+F:\Final Code\obj\Debug\net7.0\Final Code.AssemblyInfo.cs
+F:\Final Code\obj\Debug\net7.0\Final Code.csproj.CoreCompileInputs.cache
+F:\Final Code\obj\Debug\net7.0\Final Code.dll
+F:\Final Code\obj\Debug\net7.0\refint\Final Code.dll
+F:\Final Code\obj\Debug\net7.0\Final Code.pdb
+F:\Final Code\obj\Debug\net7.0\Final Code.genruntimeconfig.cache
+F:\Final Code\obj\Debug\net7.0\ref\Final Code.dll

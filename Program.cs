@@ -66,7 +66,7 @@
     }
     public abstract class Post
     {
-        //  List<Post> postList = new List<Post>();
+        List<Post> postList = new List<Post>();
         public string Content { get; set; }
         public string Username { get; set; }
 
@@ -92,6 +92,7 @@
             Console.WriteLine("Image URL: " + ImageUrl);
         }
     }
+
 
     class Programs
     {
