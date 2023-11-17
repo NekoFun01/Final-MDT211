@@ -1,121 +1,27 @@
-﻿namespace Neko
+﻿using System;
+using System.Collections.Generic;
+using System.Net.Http.Headers;
+namespace NFT
 {
     public enum Visibility
     {
         PRIVATE,
         PUBLIC,
     }
-
-    ///////////////////////////////////////////////////////////////////////////////////////////// Class ACCOUNT HEAD //////////////////////////////////////////////////////////////
-    class Account
-    {
-        private Dictionary<string, Account> _userDictionary = new Dictionary<string, Account>();
-        List<Post> postList = new List<Post>();
-
-        public string Username { get; set; }
-        public string Id { get; }
-
-        public int balance { get; }
-        private List<Account> _followList = new List<Account>();
-
-        /////////////////////////////////////////////////////////////////////////////////////////////  Follow HEAD //////////////////////////////////////////////////////////////
-
-        public List<Account> GetFollowList()                ////// ใช้ add user เข้าไปใน list //////////
-        {
-            List<Account> resultList = new List<Account>();
-            foreach (Account user in _followList)
-            {
-                resultList.Add(user);
-            }
-            return resultList;
-        }
-        public void FollowUser(Account userToFollow)   //////แอด Follower เข้า List
-        {
-            if (_followList.Contains(userToFollow))
-            {
-                Console.WriteLine(this.Username + " has already follow " + userToFollow.Username);
-                return;
-            }
-
-            _followList.Add(userToFollow);
-            Console.WriteLine(this.Username + " follow " + userToFollow.Username);
-        }
-        public void RemoveFollower(Account User)       /////ลบ Follower
-        {
-            _followList.Remove(User);
-        }
-        /////////////////////////////////////////////////////////////////////////////////////////////  Follow Bot //////////////////////////////////////////////////////////////
-        ////////////////////////////////////////////////////////////////////////////////////////////////  Register Head //////////////////////////////////////////////////////////////
-        public void RegisterUser(string userName)       /// UserName ห้ามซ้ำกัน
-        {
-            if (_userDictionary.ContainsKey(userName))
-            {
-                Console.WriteLine("Username " + userName + " already registered");
-                return;
-            }
-
-            Account newUser = new Account       ////ผ่าน if = ชื่อไม่ซ้ำ จะแอดเข้า list
-            {
-                Username = userName
-            };
-            _userDictionary.Add(userName, newUser);
-            Console.WriteLine("Register user " + newUser.Username);
-        }
-        ////////////////////////////////////////////////////////////////////////////////////////////////  Register Bot //////////////////////////////////////////////////////////////
-        public Account GetUser(string userName)      ////ใช้เรียก User ตัวตั้งต้น
-        {
-            if (!_userDictionary.ContainsKey(userName))
-            {
-                Console.WriteLine("Username " + userName + " does not exist");
-                return null;
-            }
-
-            return _userDictionary[userName];
-        }
-        public List<Post> FetchPublicPost()
-        {
-            List<Post> resultList = new List<Post>();
-            foreach (Post post in postList)
-            {
-                if (post.PostVisibility == Visibility.PUBLIC)
-                {
-                    resultList.Add(post);
-                }
-            }
-            return resultList;
-        }
-        public void AddTextPost(string content, Visibility visibility)
-        {
-            TextPost newPost = new TextPost
-            {
-                Username = Username,
-                PostVisibility = visibility,
-                Content = content
-            };
-            postList.Add(newPost);
-        }
-    }
-    ///////////////////////////////////////////////////////////////////////////////////////////// Class ACCOUNT BOT //////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////////////////////////  Post Head//////////////////////////////////////////////////////////////
-
     public abstract class Post
     {
-
         public string Content { get; set; }
-        public string Username { get; set; }
+        public Account Author { get; set; }
         public Visibility PostVisibility { get; set; }
-       
-
 
         public abstract void Display();
-
     }
 
     public class TextPost : Post
     {
         public override void Display()
         {
-            Console.WriteLine("Text Post by " + Username + ": " + Content);
+            Console.WriteLine("Text Post by " + Author.Username + ": " + Content);
         }
     }
 
@@ -125,7 +31,7 @@
 
         public override void Display()
         {
-            Console.WriteLine("Image Post by " + Username + ": " + Content);
+            Console.WriteLine("Image Post by " + Author.Username + ": " + Content);
             Console.WriteLine("Image URL: " + ImageUrl);
         }
     }
@@ -136,37 +42,135 @@
 
         public override void Display()
         {
-            Console.WriteLine("Video Post by " + Username + ": " + Content);
+            Console.WriteLine("Video Post by " + Author.Username + ": " + Content);
             Console.WriteLine("Video URL: " + VideoUrl);
         }
     }
 
     public class SalePost : Post
     {
-        public string SaleUrl { get; set; }
+        public string Saleitem { get; set; }
+        public string Cost { get; set; }
 
         public override void Display()
         {
-            Console.WriteLine("Sale Post by " + Username + ": " + Content);
-            Console.WriteLine("Sale URL: " + SaleUrl);
+            Console.WriteLine("Sale Post by " + Author.Username + ": " + Content);
+            Console.WriteLine("Sale item: " + Saleitem + " ( {0} ETH )", Cost);
         }
-
     }
 
 
-
-    //////////////////////////////////////////////////////////////////////////////////////////////// Post Bot//////////////////////////////////////////////////////////////
-    ///
-    //////////////////////////////////////////////////////////////////////////////////////////////// Feed Head//////////////////////////////////////////////////////////////
-    class Feed
+    public class Account
     {
-        public string UserFeed;
-        public string UserPost;
-        public string Register;
+
+
+        public string Username { get; set; }
+        public int balance { get; set; }
+
+
+        private List<Account> _followList = new List<Account>();
+        private List<Post> _postList = new List<Post>();
+
+        public List<Account> GetFollowList()
+        {
+            List<Account> resultList = new List<Account>();
+            foreach (Account user in _followList)
+            {
+                resultList.Add(user);
+            }
+            return resultList;
+        }
+        public void FollowUser(Account userToFollow)
+        {
+            if (_followList.Contains(userToFollow))
+            {
+                Console.WriteLine(this.Username + " has already follow " + userToFollow.Username);
+                return;
+            }
+
+            _followList.Add(userToFollow);
+            Console.WriteLine(this.Username + " follow " + userToFollow.Username);
+        }
+        public void RemoveFollower(Account toRemoveUser)
+        {
+            _followList.Remove(toRemoveUser);
+            Console.WriteLine(this.Username + " unfollow " + toRemoveUser.Username);
+        }
+
+        public List<Post> FetchPublicPost()
+        {
+            List<Post> resultList = new List<Post>();
+            foreach (Post post in _postList)
+            {
+                if (post.PostVisibility == Visibility.PUBLIC)
+                {
+                    resultList.Add(post);
+                }
+            }
+            return resultList;
+        }
+
+        public void AddTextPost(string content, Visibility visibility)
+        {
+            TextPost newPost = new TextPost
+            {
+                Author = this,
+                PostVisibility = visibility,
+                Content = content
+            };
+            _postList.Add(newPost);
+        }
+
+
+        public void AddImagePost(string content, string imageUrl, Visibility visibility)
+        {
+            ImagePost newPost = new ImagePost
+            {
+                Author = this,
+                PostVisibility = visibility,
+                Content = content,
+                ImageUrl = imageUrl,
+            };
+            _postList.Add(newPost);
+        }
+
+        public void AddVideoPost(string content, string videoUrl, Visibility visibility)
+        {
+            VideoPost newPost = new VideoPost
+            {
+                Author = this,
+                PostVisibility = visibility,
+                Content = content,
+                VideoUrl = videoUrl,
+            };
+            _postList.Add(newPost);
+        }
+
+        public void AddSalePost(string content, string saleitem, string cost, Visibility visibility)
+        {
+            SalePost newPost = new SalePost
+            {
+                Author = this,
+                PostVisibility = visibility,
+                Content = content,
+                Saleitem = saleitem,
+                Cost = cost
+            };
+            _postList.Add(newPost);
+        }
+
+
+
+    }
+
+    class Application
+    {
+        private Dictionary<string, Account> _userDictionary = new Dictionary<string, Account>();
+
 
         public void ShowUserFeed(Account viewer)
         {
-            int MAX_POST_PER_USER = 2;
+            int MAX_POST_PER_USER = 5;
             int MAX_POST_AMOUNT = 10;
 
             List<Post> postToDisplayList = new List<Post>();
@@ -189,100 +193,289 @@
                     ++postCount;
                 }
             }
+            Console.WriteLine("--------------------");
+            Console.WriteLine("- Show " + viewer.Username + " feed -");
 
-            Console.WriteLine("-- Show " + viewer.Username + " feed ----");
             foreach (Post post in postToDisplayList)
             {
                 post.Display();
             }
-            Console.WriteLine("----");
+            Console.WriteLine("--------------------");
+
         }
 
         public void ShowUserWall(Account userToDisplay)
         {
             List<Post> postToDisplayList = userToDisplay.FetchPublicPost();
+            Console.WriteLine("--------------------");
+            Console.WriteLine("- Show " + userToDisplay.Username + " Post -");
 
-            Console.WriteLine("---- Show " + userToDisplay.Username + " wall ---");
             foreach (Post post in postToDisplayList)
             {
                 post.Display();
             }
-            Console.WriteLine("---");
+            Console.WriteLine("--------------------");
+
+        }
+
+
+
+        public void RegisterUser(string username)
+        {
+            if (_userDictionary.ContainsKey(username))
+            {
+                Console.WriteLine("Username " + username + " already registered");
+                return;
+            }
+
+            Account newAccount = new Account
+            {
+                Username = username,
+                balance = 0
+
+            };
+            _userDictionary.Add(username, newAccount);
+            Console.WriteLine("Register user " + newAccount.Username);
+
+        }
+        public Account GetUser(string userName)
+        {
+            if (!_userDictionary.ContainsKey(userName))
+            {
+                Console.WriteLine("Username " + userName + " does not exist");
+                return null;
+            }
+
+            return _userDictionary[userName];
+        }
+
+        public void ListAccount()
+        {
+            Console.WriteLine("All Account:");
+            foreach (KeyValuePair<string, Account> acc in _userDictionary)//เหมือนเป็นclassใหม่
+            {
+                Console.WriteLine(" User: " + acc.Value.Username);
+
+            }
+        }
+
+        public List<Account> SearchByAccountUsername(string accountUsername)
+        {
+            List<string> search = new List<string>();
+            foreach (Account account in _userDictionary.Values)
+            {
+                if (account.Username == accountUsername)
+                {
+                    Console.WriteLine("------");
+                    Console.WriteLine("Account found  : " + accountUsername);
+                    Console.WriteLine("------");
+                    search.Add(account.Username);
+                }
+                else if ("Exit" == accountUsername)
+                {
+                    break;
+                }
+
+            }
+            if (search.Count == 0)
+            {
+                Console.WriteLine("------");
+                Console.WriteLine("Account not found  : " + accountUsername);
+                Console.WriteLine("------");
+            }
+
+
+            return null;
         }
 
     }
-    //////////////////////////////////////////////////////////////////////////////////////////////// Feed Bot//////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////////////////////////  Main  Head //////////////////////////////////////////////////////////////
+
+    public class Item
+    {
+        public string Item_name { get; set; }
+        public double Item_price { get; set; }
+        public string Item_author { get; set; }
+
+        public Item(string itemName, double itemPrice, string itemAuthor)
+        {
+            Item_name = itemName;
+            Item_price = itemPrice;
+            Item_author = itemAuthor;
+        }
+    }
+    public class Inventory
+    {
+        private Dictionary<string, Item> _itemDictionary = new Dictionary<string, Item>();
+        private List<Item> _items;
+
+        public List<Item> Items { get { return _items; } }
+
+        public Inventory()
+        {
+            _items = new List<Item>();
+        }
+
+        public void AddItem(Item item)
+        {
+            _items.Add(item);
+        }
+
+        public List<Item> DisplayInventory(Inventory inventory)
+        {
+            Console.WriteLine("Inventory:");
+            foreach (var item in inventory._items)
+            {
+                Console.WriteLine($"Item name: {item.Item_name}, Price: {item.Item_price}, Author: {item.Item_author}");
+            }
+
+            return null;
+        }
+
+        public List<Item> SearchByItemName(string itemName)
+        {
+            List<string> search = new List<string>();
+
+            foreach (Item item in _items)
+            {
+                if (item.Item_name == itemName)
+                {
+                    Console.WriteLine("------");
+                    Console.WriteLine("Found item: " + itemName + ", Price: " + item.Item_price);
+                    Console.WriteLine("------");
+                    search.Add(item.Item_name);
+
+                }
+
+            }
+
+            if (search.Count == 0)
+            {
+                Console.WriteLine("------");
+                Console.WriteLine("Not found item: " + itemName);
+                Console.WriteLine("------");
+
+            }
+
+            return null;
+        }
+    }
+
     class Programs
     {
         static void Main(string[] args)
         {
-            List<Post> postList = new List<Post>();
-            Account test = new Account();
 
-            test.RegisterUser("Neko");
-            test.RegisterUser("Nekak");
+            Application application = new Application();
 
-            test.GetUser("Neko").FollowUser(test.GetUser("Nekak"));
-            test.GetUser("Neko").FollowUser(test.GetUser("Nekak"));
-            TextPost textPost1 = new TextPost
+            application.RegisterUser("Neko");
+            application.RegisterUser("Nekak");
+
+
+            application.GetUser("Nekak").FollowUser(application.GetUser("Neko"));
+            application.GetUser("Nekak").RemoveFollower(application.GetUser("Neko"));
+
+            application.GetUser("Neko").AddTextPost("This is fine.", Visibility.PUBLIC);
+            application.GetUser("Nekak").AddTextPost("This is not fine.", Visibility.PUBLIC);
+            application.GetUser("Nekak").AddImagePost("This is not fine.", "cat.jpg", Visibility.PUBLIC);
+
+
+            application.GetUser("Neko").FollowUser(application.GetUser("Nekak"));
+            application.ShowUserWall(application.GetUser("Neko"));
+            application.ShowUserWall(application.GetUser("Nekak"));
+
+
+            //application.ListAccount();
+
+            bool isRunning = true;
+
+            while (isRunning)
             {
-                Username = "Alice",
-                Content = "Hello, World!"
-            };
+                //Console.Clear();
+                Console.WriteLine("Menu");
+                Console.WriteLine("====================");
+                Console.WriteLine("1.Feed post");
+                Console.WriteLine("2.Inventory");
+                Console.WriteLine("3.Search");
+                Console.WriteLine("4.Exit");
+                Console.WriteLine("====================");
+                Console.Write("Menu select: ");
+                int menuSelect = int.Parse(Console.ReadLine());
 
-           
-            postList.Add(textPost1);
-           
-            foreach (Post post in postList)
-            {
-                post.Display();
-                Console.WriteLine("------");
+                switch (menuSelect)
+                {
+                    case 1:
+                        string UserName = "";
+                        while (UserName != "Exit")
+                        {
+                            Console.WriteLine("Please input username  or \"Exit\" to exit :");
+                            UserName = Console.ReadLine();
+                            if (UserName == "Exit")
+                            {
+                                break;
+                            }
+                            application.ShowUserFeed(application.GetUser(UserName));
+
+
+                        }
+                        break;
+
+
+                    case 2:
+                        //List<Item> itemsList = new List<Item>();
+                        Inventory inventory = new Inventory();
+
+                        inventory.AddItem(new Item("1", 5.99, "Nekak"));
+                        inventory.AddItem(new Item("2", 17.99, "Nekak"));
+                        inventory.AddItem(new Item("3", 1.99, "Nekak"));
+
+
+                        inventory.DisplayInventory(inventory);
+                        Console.Write("Search inventory (Y/N): ");
+                        var choice = Console.ReadLine();
+
+                        switch (choice)
+                        {
+                            case "Y":
+                                Console.Write("Enter item name: ");
+                                string searchItem = Console.ReadLine();
+                                inventory.SearchByItemName(searchItem);
+                                break;
+
+                            case "N":
+                                break;
+                        }
+                        break;
+
+                    case 3:
+                        string keyword = "";
+                        while (keyword != "Exit")
+                        {
+                            Console.WriteLine("Please input username to search or \"Exit\" to exit :");
+                            keyword = Console.ReadLine();
+                            if (keyword == "Exit")
+                            {
+                                break;
+                            }
+                            application.SearchByAccountUsername(keyword);
+                        }
+                        break;
+
+                    case 4:
+
+                        isRunning = false;
+                        break;
+                }
+
+                Console.Clear();
+
             }
+            Console.WriteLine("See you soon");
 
-            test.GetUser("Neko").AddTextPost("A cryptobiote a day keeps the Timefall away.", Visibility.PUBLIC);
 
-            // Dictionary<string, string> posts = new Dictionary<string, string>();
 
-            // bool exit = false;
 
-            // while (!exit)
-            // {
-            //     Console.WriteLine("1. Add Post\n2. View Feed\n3. Exit");
-            //     Console.Write("Select an option: ");
-            //     string option = Console.ReadLine();
 
-            //     switch (option)
-            //     {
-            //         case "1":
-            //             Console.Write("Enter username: ");
-            //             string username = Console.ReadLine();
-            //             Console.Write("Enter post: ");
-            //             string post = Console.ReadLine();
 
-            //             posts.Add(username, post);
-            //             Console.WriteLine("Post added successfully!\n");
-            //             break;
-
-            //         case "2":
-            //             Console.WriteLine("Feed:");
-            //             foreach (KeyValuePair<string, string> entry in posts)
-            //             {
-            //                 Console.WriteLine($"Username: {entry.Key}\nPost: {entry.Value}\n");
-            //             }
-            //             break;
-
-            //         case "3":
-            //             exit = true;
-            //             break;
-
-            //         default:
-            //             Console.WriteLine("Invalid option. Please try again.\n");
-            //             break;
-            //     }
-            // }
         }
     }
-    ////////////////////////////////////////////////////////////////////////////////////////////////  Main Bot //////////////////////////////////////////////////////////////
 }
-
