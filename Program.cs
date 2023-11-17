@@ -70,6 +70,7 @@ namespace NFT
 
         private List<Account> _followList = new List<Account>();
         private List<Post> _postList = new List<Post>();
+        private List<Post> _salepostList = new List<Post>();
 
         public List<Account> GetFollowList()
         {
@@ -80,6 +81,17 @@ namespace NFT
             }
             return resultList;
         }
+
+        public List<Post> GetSalepost()
+        {
+            List<Post> resultList = new List<Post>();
+            foreach (Post post in _salepostList)
+            {
+                resultList.Add(post);
+            }
+            return resultList;
+        }
+
         public void FollowUser(Account userToFollow)
         {
             if (_followList.Contains(userToFollow))
@@ -157,6 +169,7 @@ namespace NFT
                 Cost = cost
             };
             _postList.Add(newPost);
+            _salepostList.Add(newPost);
         }
 
 
@@ -170,37 +183,58 @@ namespace NFT
 
         public void ShowUserFeed(Account viewer)
         {
-            int MAX_POST_PER_USER = 5;
-            int MAX_POST_AMOUNT = 10;
-
-            List<Post> postToDisplayList = new List<Post>();
-            List<Account> followList = viewer.GetFollowList();
-            foreach (Account user in followList)
+            if (_userDictionary.ContainsValue(viewer))
             {
-                if (postToDisplayList.Count >= MAX_POST_AMOUNT)
-                {
-                    break;
-                }
 
-                int postCount = 0;
-                foreach (Post post in user.FetchPublicPost())
+                int MAX_POST_PER_USER = 5;
+                int MAX_POST_AMOUNT = 10;
+
+                List<Post> postToDisplayList = new List<Post>();
+                List<Account> followList = viewer.GetFollowList();
+
+                // Adding posts from followed users
+                foreach (Account user in followList)
                 {
-                    if (postCount >= MAX_POST_PER_USER || postToDisplayList.Count >= MAX_POST_AMOUNT)
+                    if (postToDisplayList.Count >= MAX_POST_AMOUNT)
                     {
                         break;
                     }
-                    postToDisplayList.Add(post);
-                    ++postCount;
-                }
-            }
-            Console.WriteLine("--------------------");
-            Console.WriteLine("- Show " + viewer.Username + " feed -");
 
-            foreach (Post post in postToDisplayList)
-            {
-                post.Display();
+                    int postCount = 0;
+                    foreach (Post post in user.FetchPublicPost())
+                    {
+                        if (postCount >= MAX_POST_PER_USER || postToDisplayList.Count >= MAX_POST_AMOUNT)
+                        {
+                            break;
+                        }
+                        postToDisplayList.Add(post);
+                        ++postCount;
+                    }
+                }
+
+                // Adding sale posts from all users to the feed
+                foreach (Account user in _userDictionary.Values)
+                {
+                    foreach (Post salePost in user.GetSalepost())
+                    {
+                        if (postToDisplayList.Count >= MAX_POST_AMOUNT)
+                        {
+                            break;
+                        }
+                        postToDisplayList.Add(salePost);
+                    }
+                }
+
+                Console.WriteLine("--------------------");
+                Console.WriteLine("= Show " + viewer.Username + " feed =");
+
+                foreach (Post post in postToDisplayList)
+                {
+                    post.Display();
+                }
+
+                Console.WriteLine("--------------------");
             }
-            Console.WriteLine("--------------------");
 
         }
 
@@ -208,7 +242,7 @@ namespace NFT
         {
             List<Post> postToDisplayList = userToDisplay.FetchPublicPost();
             Console.WriteLine("--------------------");
-            Console.WriteLine("- Show " + userToDisplay.Username + " Post -");
+            Console.WriteLine("= Show " + userToDisplay.Username + " Post =");
 
             foreach (Post post in postToDisplayList)
             {
@@ -266,9 +300,9 @@ namespace NFT
             {
                 if (account.Username == accountUsername)
                 {
-                    Console.WriteLine("------");
+                    Console.WriteLine("--------------------");
                     Console.WriteLine("Account found  : " + accountUsername);
-                    Console.WriteLine("------");
+                    Console.WriteLine("--------------------");
                     search.Add(account.Username);
                 }
                 else if ("Exit" == accountUsername)
@@ -279,9 +313,9 @@ namespace NFT
             }
             if (search.Count == 0)
             {
-                Console.WriteLine("------");
+                Console.WriteLine("--------------------");
                 Console.WriteLine("Account not found  : " + accountUsername);
-                Console.WriteLine("------");
+                Console.WriteLine("--------------------");
             }
 
 
@@ -339,9 +373,9 @@ namespace NFT
             {
                 if (item.Item_name == itemName)
                 {
-                    Console.WriteLine("------");
-                    Console.WriteLine("Found item: " + itemName + ", Price: " + item.Item_price);
-                    Console.WriteLine("------");
+                    Console.WriteLine("--------------------");
+                    Console.WriteLine("== Found item: " + itemName + ", Price: " + item.Item_price);
+                    Console.WriteLine("--------------------");
                     search.Add(item.Item_name);
 
                 }
@@ -350,9 +384,9 @@ namespace NFT
 
             if (search.Count == 0)
             {
-                Console.WriteLine("------");
-                Console.WriteLine("Not found item: " + itemName);
-                Console.WriteLine("------");
+                Console.WriteLine("--------------------");
+                Console.WriteLine("== Not found item: " + itemName);
+                Console.WriteLine("--------------------");
 
             }
 
@@ -370,21 +404,18 @@ namespace NFT
             application.RegisterUser("Neko");
             application.RegisterUser("Nekak");
 
-
             application.GetUser("Nekak").FollowUser(application.GetUser("Neko"));
             application.GetUser("Nekak").RemoveFollower(application.GetUser("Neko"));
+            application.GetUser("Neko").RemoveFollower(application.GetUser("Nekak"));
 
             application.GetUser("Neko").AddTextPost("This is fine.", Visibility.PUBLIC);
             application.GetUser("Nekak").AddTextPost("This is not fine.", Visibility.PUBLIC);
             application.GetUser("Nekak").AddImagePost("This is not fine.", "cat.jpg", Visibility.PUBLIC);
+            application.GetUser("Neko").AddSalePost("This is not fine.", "cat", "1000", Visibility.PUBLIC);
 
-
-            application.GetUser("Neko").FollowUser(application.GetUser("Nekak"));
             application.ShowUserWall(application.GetUser("Neko"));
             application.ShowUserWall(application.GetUser("Nekak"));
 
-
-            //application.ListAccount();
 
             bool isRunning = true;
 
@@ -407,7 +438,7 @@ namespace NFT
                         string UserName = "";
                         while (UserName != "Exit")
                         {
-                            Console.WriteLine("Please input username  or \"Exit\" to exit :");
+                            Console.Write("Please input username  or \"Exit\" to exit :");
                             UserName = Console.ReadLine();
                             if (UserName == "Exit")
                             {
@@ -436,9 +467,19 @@ namespace NFT
                         switch (choice)
                         {
                             case "Y":
-                                Console.Write("Enter item name: ");
-                                string searchItem = Console.ReadLine();
-                                inventory.SearchByItemName(searchItem);
+                                string Itemkeyword = "";
+                                while (Itemkeyword != "Exit")
+                                {
+                                    Console.Write("Please input item name  or \"Exit\" to exit :");
+                                    Itemkeyword = Console.ReadLine();
+                                    if (Itemkeyword == "Exit")
+                                    {
+                                        break;
+                                    }
+                                    inventory.SearchByItemName(Itemkeyword);
+
+                                }
+
                                 break;
 
                             case "N":
@@ -450,7 +491,7 @@ namespace NFT
                         string keyword = "";
                         while (keyword != "Exit")
                         {
-                            Console.WriteLine("Please input username to search or \"Exit\" to exit :");
+                            Console.Write("Please input username to search or \"Exit\" to exit :");
                             keyword = Console.ReadLine();
                             if (keyword == "Exit")
                             {
@@ -469,11 +510,7 @@ namespace NFT
                 Console.Clear();
 
             }
-            Console.WriteLine("See you soon");
-
-
-
-
+            Console.WriteLine("See you soon!");
 
 
         }
