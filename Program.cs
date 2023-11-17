@@ -1,6 +1,7 @@
 ﻿namespace Neko
 {
-    class Account
+    ///////////////////////////////////////////////////////////////////////////////////////////// Class ACCOUNT HEAD //////////////////////////////////////////////////////////////
+    class Account                                                 
     {
         private Dictionary<string, Account> _userDictionary = new Dictionary<string, Account>();
 
@@ -10,17 +11,18 @@
         public int balance { get; }
         private List<Account> _followList = new List<Account>();
 
+ /////////////////////////////////////////////////////////////////////////////////////////////  Follow HEAD //////////////////////////////////////////////////////////////
 
-        public List<Account> GetFollowList()
-        {
-            List<Account> resultList = new List<Account>();
-            foreach (Account user in _followList)
-            {
-                resultList.Add(user);
-            }
-            return resultList;
-        }
-        public void FollowUser(Account userToFollow)
+        // public List<Account> GetFollowList()                ////// ใช้ add user เข้าไปใน list //////////
+        // {
+        //     List<Account> resultList = new List<Account>();
+        //     foreach (Account user in _followList)
+        //     {
+        //         resultList.Add(user);
+        //     }
+        //     return resultList;
+        // }
+        public void FollowUser(Account userToFollow)   //////แอด Follower เข้า List
         {
             if (_followList.Contains(userToFollow))
             {
@@ -31,12 +33,13 @@
             _followList.Add(userToFollow);
             Console.WriteLine(this.Username + " follow " + userToFollow.Username);
         }
-        public void RemoveFollower(Account User)
+        public void RemoveFollower(Account User)       /////ลบ Follower
         {
             _followList.Remove(User);
         }
-
-        public void RegisterUser(string userName)
+/////////////////////////////////////////////////////////////////////////////////////////////  Follow Bot //////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////  Register Head //////////////////////////////////////////////////////////////
+        public void RegisterUser(string userName)       /// UserName ห้ามซ้ำกัน
         {
             if (_userDictionary.ContainsKey(userName))
             {
@@ -44,14 +47,15 @@
                 return;
             }
 
-            Account newUser = new Account
+            Account newUser = new Account       ////ผ่าน if = ชื่อไม่ซ้ำ จะแอดเข้า list
             {
                 Username = userName
             };
             _userDictionary.Add(userName, newUser);
             Console.WriteLine("Register user " + newUser.Username);
         }
-        public Account GetUser(string userName)
+        ////////////////////////////////////////////////////////////////////////////////////////////////  Register Bot //////////////////////////////////////////////////////////////
+        public Account GetUser(string userName)      ////ใช้เรียก User ตัวตั้งต้น
         {
             if (!_userDictionary.ContainsKey(userName))
             {
@@ -64,6 +68,9 @@
 
 
     }
+       ///////////////////////////////////////////////////////////////////////////////////////////// Class ACCOUNT BOT //////////////////////////////////////////////////////////////
+       ////////////////////////////////////////////////////////////////////////////////////////////////  Post Head//////////////////////////////////////////////////////////////
+   
     public abstract class Post
     {
         List<Post> postList = new List<Post>();
@@ -93,7 +100,14 @@
         }
     }
 
-
+//////////////////////////////////////////////////////////////////////////////////////////////// Post Bot//////////////////////////////////////////////////////////////
+    class Feed 
+    {
+        public string UserFeed;
+        public string UserPost;
+        public string Register;
+    }
+  ////////////////////////////////////////////////////////////////////////////////////////////////  Main  Head //////////////////////////////////////////////////////////////
     class Programs
     {
         static void Main(string[] args)
@@ -127,5 +141,6 @@
 
         }
     }
+     ////////////////////////////////////////////////////////////////////////////////////////////////  Main Bot //////////////////////////////////////////////////////////////
 }
 
