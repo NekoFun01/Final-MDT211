@@ -62,9 +62,8 @@ namespace NFT
 
     public class Account
     {
-
-
         public string Username { get; set; }
+        public string Password { get; set; }
         public int balance { get; set; }
 
 
@@ -179,6 +178,7 @@ namespace NFT
     class Application
     {
         private Dictionary<string, Account> _userDictionary = new Dictionary<string, Account>();
+        public bool CheckLoop = true;
 
 
         public void ShowUserFeed(Account viewer)
@@ -253,24 +253,92 @@ namespace NFT
         }
 
 
-
-        public void RegisterUser(string username)
+        public void BotAccount()
         {
+            Account nekoBotAccount = new Account
+            {
+                Username = "Neko",
+                Password = "Neko007",
+                balance = 0
+            };
+
+            Account nekakBotAccount = new Account
+            {
+                Username = "Nekak",
+                Password = "Nekak008",
+                balance = 0
+            };
+
+            _userDictionary.Add("Neko", nekoBotAccount);
+            _userDictionary.Add("Nekak", nekakBotAccount);
+
+        }
+        public void RegisterUser()
+        {
+
+            // Account nekoBotAccount = new Account
+            // {
+            //     Username = "Neko",
+            //     Password = "Neko007",
+            //     balance = 0
+            // };
+
+            // Account nekakBotAccount = new Account
+            // {
+            //     Username = "Nekak",
+            //     Password = "Nekak008",
+            //     balance = 0
+            // };
+
+            // _userDictionary.Add("Neko", nekoBotAccount);
+            // _userDictionary.Add("Nekak", nekakBotAccount);
+
+            Console.Write("Enter your username: ");
+            string username = Console.ReadLine();
+            CheckLoop = true;
             if (_userDictionary.ContainsKey(username))
             {
                 Console.WriteLine("Username " + username + " already registered");
+                CheckLoop = false;
                 return;
             }
+            else
+            {
+                CheckLoop = true;
+            }
+
+            Console.Write("Enter your password: ");
+            string password = Console.ReadLine();
 
             Account newAccount = new Account
             {
                 Username = username,
+                Password = password,
                 balance = 0
-
             };
+
             _userDictionary.Add(username, newAccount);
             Console.WriteLine("Register user " + newAccount.Username);
+        }
 
+
+        public void LoginUser()
+        {
+            Console.Write("Enter username: ");
+            string username = Console.ReadLine();
+            Console.Write("Enter password: ");
+            string password = Console.ReadLine();
+            CheckLoop = true;
+            if (_userDictionary.ContainsKey(username) && _userDictionary.ContainsKey(password))
+            {
+                Console.WriteLine("Login successful. Welcome, " + username + ".");
+                CheckLoop = false;
+            }
+            else
+            {
+                Console.WriteLine("Invalid username or password. Please try again.");
+                CheckLoop = true;
+            }
         }
         public Account GetUser(string userName)
         {
@@ -394,125 +462,179 @@ namespace NFT
         }
     }
 
+    class UI
+    {
+        private Application application;
+
+        public UI()
+        {
+            application = new Application();
+        }
+
+        public void Start()
+        {
+            bool isRegister = true;
+            bool isRunning = true;
+            Console.Clear();
+            application.BotAccount();
+            while (isRegister)
+            {
+                Console.WriteLine("Hello, Make NFT trading easy with us.");
+                Console.WriteLine("====================");
+                Console.WriteLine("\u001b[1mOption\u001b[0m");
+                Console.WriteLine("1.Login");
+                Console.WriteLine("2.Register");
+                Console.WriteLine("3.Exit");
+                Console.WriteLine("====================");
+                Console.Write("Select option: ");
+
+                string optionChoice = Console.ReadLine();
+                switch (optionChoice)
+                {
+                    case "1":
+                        application.LoginUser();
+                        if(application.CheckLoop == false)
+                        {
+
+                        isRegister = false;
+                        }
+                        break;
+
+                    case "2":
+                        application.RegisterUser();
+                        if (application.CheckLoop == true)
+                        {
+                            isRegister = false;
+                        }
+                        break;
+
+                    case "3":
+                        isRegister = false;
+                        isRunning = false;
+                        break;
+                }
+            }
+
+            if (isRunning == true)
+            {
+                application.GetUser("Nekak").FollowUser(application.GetUser("Neko"));
+                application.GetUser("Nekak").RemoveFollower(application.GetUser("Neko"));
+                application.GetUser("Neko").RemoveFollower(application.GetUser("Nekak"));
+
+                application.GetUser("Neko").AddTextPost("This is fine.", Visibility.PUBLIC);
+                application.GetUser("Nekak").AddTextPost("This is not fine.", Visibility.PUBLIC);
+                application.GetUser("Nekak").AddImagePost("This is not fine.", "cat.jpg", Visibility.PUBLIC);
+                application.GetUser("Neko").AddSalePost("This is not fine.", "cat", "1000", Visibility.PUBLIC);
+
+                application.ShowUserWall(application.GetUser("Neko"));
+                application.ShowUserWall(application.GetUser("Nekak"));
+
+                while (isRunning)
+                {
+                    Console.WriteLine("Menu");
+                    Console.WriteLine("====================");
+                    Console.WriteLine("1.Feed post");
+                    Console.WriteLine("2.Inventory");
+                    Console.WriteLine("3.Search");
+                    Console.WriteLine("4.Exit");
+                    Console.WriteLine("====================");
+                    Console.Write("Menu select: ");
+                    int menuSelect = int.Parse(Console.ReadLine());
+
+                    switch (menuSelect)
+                    {
+                        case 1:
+                            string UserName = "";
+                            while (UserName != "Exit")
+                            {
+                                Console.Write("Please input username  or \"Exit\" to exit :");
+                                UserName = Console.ReadLine();
+                                if (UserName == "Exit")
+                                {
+                                    break;
+                                }
+                                application.ShowUserFeed(application.GetUser(UserName));
+
+
+                            }
+                            break;
+
+
+                        case 2:
+                            Inventory inventory = new Inventory();
+
+                            inventory.AddItem(new Item("1", 5.99, "Nekak"));
+                            inventory.AddItem(new Item("2", 17.99, "Nekak"));
+                            inventory.AddItem(new Item("3", 1.99, "Nekak"));
+
+
+                            inventory.DisplayInventory(inventory);
+                            Console.Write("Search inventory (Y/N): ");
+                            var choice = Console.ReadLine();
+
+                            switch (choice)
+                            {
+                                case "Y":
+                                    string Itemkeyword = "";
+                                    while (Itemkeyword != "Exit")
+                                    {
+                                        Console.Write("Please input item name  or \"Exit\" to exit :");
+                                        Itemkeyword = Console.ReadLine();
+                                        if (Itemkeyword == "Exit")
+                                        {
+                                            break;
+                                        }
+                                        inventory.SearchByItemName(Itemkeyword);
+
+                                    }
+
+                                    break;
+
+                                case "N":
+                                    break;
+                            }
+                            break;
+
+                        case 3:
+                            string keyword = "";
+                            while (keyword != "Exit")
+                            {
+                                Console.Write("Please input username to search or \"Exit\" to exit :");
+                                keyword = Console.ReadLine();
+                                if (keyword == "Exit")
+                                {
+                                    break;
+                                }
+                                application.SearchByAccountUsername(keyword);
+                            }
+                            break;
+
+                        case 4:
+                            isRunning = false;
+                            break;
+                    }
+
+                    Console.Clear();
+                }
+            }
+
+            Console.Clear();
+            for (int a = 3; a >= 0; a--)
+            {
+                Console.WriteLine("See you soon!");
+                Console.Write("Appication Will Close In : {0}", a);
+                System.Threading.Thread.Sleep(1000);
+                Console.Clear();
+            }
+        }
+    }
+
     class Programs
     {
         static void Main(string[] args)
         {
-
-            Application application = new Application();
-
-            application.RegisterUser("Neko");
-            application.RegisterUser("Nekak");
-
-            application.GetUser("Nekak").FollowUser(application.GetUser("Neko"));
-            application.GetUser("Nekak").RemoveFollower(application.GetUser("Neko"));
-            application.GetUser("Neko").RemoveFollower(application.GetUser("Nekak"));
-
-            application.GetUser("Neko").AddTextPost("This is fine.", Visibility.PUBLIC);
-            application.GetUser("Nekak").AddTextPost("This is not fine.", Visibility.PUBLIC);
-            application.GetUser("Nekak").AddImagePost("This is not fine.", "cat.jpg", Visibility.PUBLIC);
-            application.GetUser("Neko").AddSalePost("This is not fine.", "cat", "1000", Visibility.PUBLIC);
-
-            application.ShowUserWall(application.GetUser("Neko"));
-            application.ShowUserWall(application.GetUser("Nekak"));
-
-
-            bool isRunning = true;
-
-            while (isRunning)
-            {
-                //Console.Clear();
-                Console.WriteLine("Menu");
-                Console.WriteLine("====================");
-                Console.WriteLine("1.Feed post");
-                Console.WriteLine("2.Inventory");
-                Console.WriteLine("3.Search");
-                Console.WriteLine("4.Exit");
-                Console.WriteLine("====================");
-                Console.Write("Menu select: ");
-                int menuSelect = int.Parse(Console.ReadLine());
-
-                switch (menuSelect)
-                {
-                    case 1:
-                        string UserName = "";
-                        while (UserName != "Exit")
-                        {
-                            Console.Write("Please input username  or \"Exit\" to exit :");
-                            UserName = Console.ReadLine();
-                            if (UserName == "Exit")
-                            {
-                                break;
-                            }
-                            application.ShowUserFeed(application.GetUser(UserName));
-
-
-                        }
-                        break;
-
-
-                    case 2:
-                        //List<Item> itemsList = new List<Item>();
-                        Inventory inventory = new Inventory();
-
-                        inventory.AddItem(new Item("1", 5.99, "Nekak"));
-                        inventory.AddItem(new Item("2", 17.99, "Nekak"));
-                        inventory.AddItem(new Item("3", 1.99, "Nekak"));
-
-
-                        inventory.DisplayInventory(inventory);
-                        Console.Write("Search inventory (Y/N): ");
-                        var choice = Console.ReadLine();
-
-                        switch (choice)
-                        {
-                            case "Y":
-                                string Itemkeyword = "";
-                                while (Itemkeyword != "Exit")
-                                {
-                                    Console.Write("Please input item name  or \"Exit\" to exit :");
-                                    Itemkeyword = Console.ReadLine();
-                                    if (Itemkeyword == "Exit")
-                                    {
-                                        break;
-                                    }
-                                    inventory.SearchByItemName(Itemkeyword);
-
-                                }
-
-                                break;
-
-                            case "N":
-                                break;
-                        }
-                        break;
-
-                    case 3:
-                        string keyword = "";
-                        while (keyword != "Exit")
-                        {
-                            Console.Write("Please input username to search or \"Exit\" to exit :");
-                            keyword = Console.ReadLine();
-                            if (keyword == "Exit")
-                            {
-                                break;
-                            }
-                            application.SearchByAccountUsername(keyword);
-                        }
-                        break;
-
-                    case 4:
-
-                        isRunning = false;
-                        break;
-                }
-
-                Console.Clear();
-
-            }
-            Console.WriteLine("See you soon!");
-
-
+            UI ui = new UI();
+            ui.Start();
         }
     }
 }
