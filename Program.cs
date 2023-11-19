@@ -409,6 +409,7 @@ namespace NFT
     {
         private Dictionary<string, Item> _itemDictionary = new Dictionary<string, Item>();
         private List<Item> _items;
+        private List<Item> _market = new List<Item>();
 
         public List<Item> Items { get { return _items; } }
 
@@ -460,6 +461,21 @@ namespace NFT
 
             return null;
         }
+        public void marketaddbot()
+        {
+            _market.Add(new Item("Testbot1", 5.99, "Test"));
+            _market.Add(new Item("Testbot2", 17.99, "Test"));
+            _market.Add(new Item("Neio", 1.99, "Test"));
+        }
+        public List<Item> Market()
+        {
+            foreach (var item in _market)
+            {
+                Console.WriteLine($"Item name: {item.Item_name}, Price: {item.Item_price}, Author: {item.Item_author}");
+            }
+            return null;
+
+        }
     }
 
     class UI
@@ -477,6 +493,11 @@ namespace NFT
             bool isRunning = true;
             Console.Clear();
             application.BotAccount();
+            Inventory bot = new Inventory();
+            bot.marketaddbot();
+           
+
+
             while (isRegister)
             {
                 Console.WriteLine("Hello, Make NFT trading easy with us.");
@@ -493,10 +514,10 @@ namespace NFT
                 {
                     case "1":
                         application.LoginUser();
-                        if(application.CheckLoop == false)
+                        if (application.CheckLoop == false)
                         {
 
-                        isRegister = false;
+                            isRegister = false;
                         }
                         break;
 
@@ -536,7 +557,8 @@ namespace NFT
                     Console.WriteLine("1.Feed post");
                     Console.WriteLine("2.Inventory");
                     Console.WriteLine("3.Search");
-                    Console.WriteLine("4.Exit");
+                    Console.WriteLine("4.Market");
+                    Console.WriteLine("5.Exit");
                     Console.WriteLine("====================");
                     Console.Write("Menu select: ");
                     int menuSelect = int.Parse(Console.ReadLine());
@@ -562,7 +584,7 @@ namespace NFT
 
                         case 2:
                             Inventory inventory = new Inventory();
-
+                            inventory.Market();
                             inventory.AddItem(new Item("1", 5.99, "Nekak"));
                             inventory.AddItem(new Item("2", 17.99, "Nekak"));
                             inventory.AddItem(new Item("3", 1.99, "Nekak"));
@@ -584,7 +606,10 @@ namespace NFT
                                         {
                                             break;
                                         }
+                                        Console.WriteLine();
+
                                         inventory.SearchByItemName(Itemkeyword);
+
 
                                     }
 
@@ -608,8 +633,24 @@ namespace NFT
                                 application.SearchByAccountUsername(keyword);
                             }
                             break;
-
                         case 4:
+                        bool CheckMarket = true;
+                        while(CheckMarket)
+                        {
+                            Console.Clear();
+                            Console.WriteLine("List Of Market");
+                            
+                            bot.Market();
+                            Console.Write("Input \"Exit\" to exit :");
+                            string market = Console.ReadLine();
+                            if (market == "Exit")
+                            {
+                                CheckMarket = false;
+                            }
+                        }
+
+                            break;
+                        case 5:
                             isRunning = false;
                             break;
                     }
