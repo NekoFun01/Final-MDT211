@@ -463,8 +463,8 @@ namespace NFT
         }
         public void marketaddbot()
         {
-            _market.Add(new Item("Testbot1", 5.99, "Test"));
-            _market.Add(new Item("Testbot2", 17.99, "Test"));
+            _market.Add(new Item("Testbot1", 5.99, "name1"));
+            _market.Add(new Item("Testbot2", 17.99, "name2"));
             _market.Add(new Item("Neio", 1.99, "Test"));
         }
         public List<Item> Market()
@@ -476,6 +476,46 @@ namespace NFT
             return null;
 
         }
+        public List<Item> SearchMarket(string searchmarket)
+        {
+            List<string> searchMarket = new List<string>();
+
+            foreach (Item item in _market)
+            {
+                if (item.Item_name == searchmarket)
+                {
+                    Console.WriteLine("--------------------");
+                    Console.WriteLine("== Found item: " + searchmarket + ", Price: " + item.Item_price);
+                    Console.WriteLine("--------------------");
+                    searchMarket.Add(item.Item_name);
+
+                }
+
+            }
+            foreach (Item item in _market)
+            {
+                if (item.Item_author == searchmarket)
+                {
+                    Console.WriteLine("--------------------");
+                    Console.WriteLine("== Found Author: " + searchmarket + ", Price: " + item.Item_price);
+                    Console.WriteLine("--------------------");
+                    searchMarket.Add(item.Item_author);
+
+                }
+
+            }
+
+            if (searchMarket.Count == 0)
+            {
+                Console.WriteLine("--------------------");
+                Console.WriteLine("== Not found item: " + searchmarket);
+                Console.WriteLine("--------------------");
+
+            }
+
+            return null;
+        }
+
     }
 
     class UI
@@ -631,22 +671,32 @@ namespace NFT
                                     break;
                                 }
                                 application.SearchByAccountUsername(keyword);
+                                
                             }
                             break;
                         case 4:
                         bool CheckMarket = true;
                         while(CheckMarket)
                         {
-                            Console.Clear();
+                            
                             Console.WriteLine("List Of Market");
                             
                             bot.Market();
-                            Console.Write("Input \"Exit\" to exit :");
+                            Console.Write("Input Username or Item Name to search in market \"Exit\" to exit :");
                             string market = Console.ReadLine();
                             if (market == "Exit")
                             {
-                                CheckMarket = false;
+                                break;
                             }
+                            bot.SearchMarket(market);
+                            Console.Write("Do You Want To Search Another Item Or User IN Market ?");
+                            Console.WriteLine("Y/N");
+                            string marketnext = Console.ReadLine();
+                            if (marketnext == "N")
+                            {
+                                break;
+                            }
+
                         }
 
                             break;
